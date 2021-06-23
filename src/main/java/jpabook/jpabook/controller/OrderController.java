@@ -42,7 +42,7 @@ public class OrderController {
 
     @GetMapping(value = "/orders")
     public String list(@ModelAttribute OrderSearch orderSearch, Model model){
-        List<Order> orders = orderService.findAllByCriteria(orderSearch);
+        List<Order> orders = orderService.findOrders(orderSearch);
         model.addAttribute("orders",orders);
 
         return "order/orderList";
