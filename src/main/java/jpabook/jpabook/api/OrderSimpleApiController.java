@@ -5,6 +5,8 @@ import jpabook.jpabook.domain.Order;
 import jpabook.jpabook.domain.OrderStatus;
 import jpabook.jpabook.repository.OrderRepository;
 import jpabook.jpabook.repository.OrderSearch;
+import jpabook.jpabook.repository.order.simplequery.OrderSimpleQueryDto;
+import jpabook.jpabook.repository.order.simplequery.OrderSimpleQueryRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class OrderSimpleApiController {
     private final OrderRepository orderRepository;
+    private final OrderSimpleQueryRepository orderSimpleQueryRepository;
 
     /**
      * V1. 엔티티 직접 노출
@@ -58,6 +61,30 @@ public class OrderSimpleApiController {
         return orders.stream()
                 .map(SimpleOrderDto::new)
                 .collect(toList());
+    }
+
+    /*
+       V3 : 엔티티를 조회해서 DTO로 변환 ( fetch join 사용 )
+        - fetch join으로 쿼리 1번만 호출
+     */
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> orderV3() {
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+
+        return orders.stream()
+                .map(SimpleOrderDto::new)
+                .collect(toList());
+    }
+
+    /**
+     * V4. JPA에서 DTO로 바로 조회
+     * - 쿼리 1번 호출
+     * - select절에서 원하는 데이터만 선택해서 조회
+     * - 리포지토리 재사용성이 떨어짐, API 스펙에 맞춘 코드가 리포지토리에 들어 가게 됨
+     */
+    @GetMapping("/api/v4/simple-orders")
+    public List<OrderSimpleQueryDto> ordersV4() {
+        return orderSimpleQueryRepository.findOrderDtos();
     }
 
     @Data
